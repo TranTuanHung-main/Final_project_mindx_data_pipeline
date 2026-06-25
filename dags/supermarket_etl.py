@@ -8,7 +8,6 @@ DAG thực hiện quy trình ETL hoàn chỉnh cho dữ liệu Supermarket Sales
   4. Load dữ liệu đã clean vào data warehouse
   5. Kiểm tra chất lượng dữ liệu (Data Quality Check)
 
-Author: Data Engineer - MindX DPA Final Project
 """
 
 import os
@@ -20,6 +19,8 @@ import pandas as pd
 from airflow import DAG
 from airflow.operators.python import PythonOperator
 from airflow.providers.postgres.hooks.postgres import PostgresHook
+from sqlalchemy import create_engine
+import urllib.parse
 
 # ============================================================
 # CẤU HÌNH
@@ -30,6 +31,15 @@ WAREHOUSE_TABLE = 'warehouse_supermarket_sales'
 DATA_FILE = '/opt/airflow/data/supermarket_sales.xlsx'
 
 logger = logging.getLogger(__name__)
+
+def get_postgres_engine():
+    """Tạo SQLAlchemy engine trực tiếp từ connection config, tránh lỗi option __extra__."""
+    hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
+    conn = hook.get_connection(POSTGRES_CONN_ID)
+    login = urllib.parse.quote_plus(conn.login) if conn.login else ""
+    password = urllib.parse.quote_plus(conn.password) if conn.password else ""
+    conn_uri = f"postgresql+psycopg2://{login}:{password}@{conn.host}:{conn.port}/{conn.schema or ''}"
+    return create_engine(conn_uri)
 
 # ============================================================
 # DEFAULT ARGS
@@ -146,8 +156,8 @@ def load_csv_to_raw(**kwargs):
     logger.info("📊 Tên cột sau chuẩn hóa: %s", list(df.columns))
 
     # Load vào raw table
+    engine = get_postgres_engine()
     hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
-    engine = hook.get_sqlalchemy_engine()
 
     logger.info("Đang load dữ liệu vào bảng %s...", RAW_TABLE)
     df.to_sql(RAW_TABLE, con=engine, if_exists='append', index=False)
@@ -173,8 +183,8 @@ def clean_validate(**kwargs):
     logger.info("TASK 3: CLEAN & VALIDATE DỮ LIỆU")
     logger.info("=" * 60)
 
+    engine = get_postgres_engine()
     hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
-    engine = hook.get_sqlalchemy_engine()
 
     # Đọc dữ liệu từ raw table
     logger.info("Đang đọc dữ liệu từ bảng %s...", RAW_TABLE)
@@ -251,8 +261,8 @@ def load_to_warehouse(**kwargs):
     logger.info("TASK 4: LOAD DỮ LIỆU VÀO DATA WAREHOUSE")
     logger.info("=" * 60)
 
+    engine = get_postgres_engine()
     hook = PostgresHook(postgres_conn_id=POSTGRES_CONN_ID)
-    engine = hook.get_sqlalchemy_engine()
 
     # Đọc từ staging
     logger.info("Đang đọc dữ liệu từ staging table...")
