@@ -6,7 +6,7 @@
 ## 📋 Mô tả dự án
 
 Pipeline ETL (Extract - Transform - Load) tự động xử lý dữ liệu bán hàng siêu thị:
-- **Extract**: Đọc dữ liệu từ file Excel
+- **Extract**: Đọc dữ liệu từ file CSV
 - **Transform**: Clean, validate, chuyển đổi kiểu dữ liệu
 - **Load**: Lưu vào PostgreSQL Data Warehouse
 - **Quality Check**: Kiểm tra chất lượng dữ liệu tự động
@@ -18,7 +18,7 @@ mindx_data_pipeline/
 ├── dags/
 │   └── supermarket_etl.py      # DAG chính - pipeline ETL
 ├── data/
-│   └── supermarket_sales.xlsx   # File dữ liệu nguồn
+│   └── supermarket_sales.csv   # File dữ liệu nguồn
 ├── sql/
 │   └── sample_queries.sql       # Các query mẫu để kiểm tra kết quả
 ├── config/                      # Airflow config (nếu cần)
@@ -38,7 +38,7 @@ mindx_data_pipeline/
 ┌──────────────────┐     ┌──────────────────┐     ┌──────────────────┐
 │  create_tables   │────▶│ load_csv_to_raw  │────▶│  clean_validate  │
 │                  │     │                  │     │                  │
-│ Tạo raw table &  │     │ Đọc Excel file   │     │ - Drop nulls     │
+│ Tạo raw table &  │     │ Đọc CSV file     │     │ - Drop nulls     │
 │ warehouse table  │     │ Load vào raw     │     │ - Remove dupes   │
 │ trong PostgreSQL │     │ table nguyên bản │     │ - Validate values│
 └──────────────────┘     └──────────────────┘     │ - Convert types  │
@@ -144,7 +144,7 @@ SELECT * FROM warehouse_supermarket_sales LIMIT 5;
 - **Apache Airflow 2.8.1** - Orchestration
 - **PostgreSQL 13** - Database
 - **Docker & Docker Compose** - Containerization
-- **Python 3** + pandas, openpyxl - Data processing
+- **Python 3** + pandas - Data processing
 - **Redis** - Celery broker (CeleryExecutor)
 
 ## 📝 Logging
