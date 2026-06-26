@@ -28,7 +28,7 @@ import urllib.parse
 POSTGRES_CONN_ID = 'my_postgres_db'
 RAW_TABLE = 'raw_supermarket_sales'
 WAREHOUSE_TABLE = 'warehouse_supermarket_sales'
-DATA_FILE = '/opt/airflow/data/supermarket_sales.xlsx'
+DATA_FILE = '/opt/airflow/data/supermarket_sales.csv'
 
 logger = logging.getLogger(__name__)
 
@@ -124,7 +124,7 @@ def create_tables(**kwargs):
 # TASK 2: LOAD DỮ LIỆU THÔ VÀO RAW TABLE
 # ============================================================
 def load_csv_to_raw(**kwargs):
-    """Đọc file Excel và load nguyên bản vào raw table (không transform)."""
+    """Đọc file CSV và load nguyên bản vào raw table (không transform)."""
     start_time = time.time()
     logger.info("=" * 60)
     logger.info("TASK 2: LOAD DỮ LIỆU THÔ VÀO RAW TABLE")
@@ -137,9 +137,9 @@ def load_csv_to_raw(**kwargs):
     file_size = os.path.getsize(DATA_FILE)
     logger.info("📂 File: %s (%.2f KB)", DATA_FILE, file_size / 1024)
 
-    # Đọc file Excel
-    logger.info("Đang đọc file Excel...")
-    df = pd.read_excel(DATA_FILE, engine='openpyxl')
+    # Đọc file CSV
+    logger.info("Đang đọc file CSV...")
+    df = pd.read_csv(DATA_FILE)
     logger.info("📊 Số dòng đọc được: %d", len(df))
     logger.info("📊 Số cột: %d", len(df.columns))
     logger.info("📊 Các cột: %s", list(df.columns))
